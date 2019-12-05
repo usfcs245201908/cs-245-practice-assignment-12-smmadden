@@ -1,5 +1,3 @@
-import java.util.*;
-
 public class Hashtable{
 
     // does this implementation need k and v, or is it just string?
@@ -12,10 +10,7 @@ public class Hashtable{
 
     // constructor
     public Hashtable(){
-        buckets = new HashNode[9]; // does this need to start at some length to add in stuff?
-        //System.out.println(buckets.size());
-        //buckets.add(null);
-        //System.out.println(buckets.get(0));
+        buckets = new HashNode[10];
     }
 
     class HashNode{
@@ -58,11 +53,10 @@ public class Hashtable{
         }
     }
 
-    public void put(String key, String value) throws Exception{
+    public void put(String key, String value){
         // Adds the key/value pair into the Hashtable instance. If there is an existing key/value pair, the Hashtable instance replaces the stored value with the argument value
 
 
-        // problem == duplicates
         // essentially have to find the thing to make sure there's no duplicates
         // if we find the key, just change the value
         // if the key is not there then just add in the key value pair
@@ -84,7 +78,8 @@ public class Hashtable{
                 }
                 head = head.next;
                 // this is going to be slightly inefficient but
-                // make more efficient!!! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                // make more efficient!!! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< EFFICIENCY PROBLEM HERE - HOW TO FIX?
+
             }
             // key is not found - we need to add it
             // want to add to the head of the linked list
@@ -94,41 +89,28 @@ public class Hashtable{
             node.next = buckets[getHash(key)];
             //node.next = buckets.get(getHash(key)); // cant do head because head is guaranteed to be null at this point
             // one last thing to do - if this is now the head, need to do a bucket set
-            buckets[0] = node; //.set(0, node);
+            buckets[getHash(key)] = node; //.set(0, node);
         }
-
         ++entries;
+
         // calculate lambda
         if(((entries * 1.0) / buckets.length) >= LOAD_THRESHOLD){
             int originalSize = buckets.length;
+            HashNode[] old_buckets = buckets;
             buckets = new HashNode[originalSize*2]; // don't need to copy everything over because we are rehashing everything
 
-//            for(int i=0; i<10; i++){ // multiplying the size by 2 each time??
-//                buckets.add(null); // created a memory issue
-//            }
 
-            // could do a while loop, like while the above equation is like it is, but then will stop right when its the perf load, not with plenty space after - what's more efficient?
-
-            // will it be a double for loop? like for the size of buckets and the size of each linked list?
 
             // remove node then add again, cycle through entire original size
             for(int i=0; i<originalSize; i++){
-                HashNode node = buckets[i];
+                HashNode node = old_buckets[i];
                 //HashNode node = buckets.get(i); // this gets the head of the bucket at index i
 
-                while(node != null){
-                    remove(node.key);
+                while(node != null){ // node is always null because we're writing over buckets
                     put(node.key, node.value);
                     node = node.next;
                 }
             }
-
-
-            // need to remove then add again
-
-            // need to increase the number of buckets
-            // left up to us
-            // rehash each item in the table <<<<<<<<<<<<<<
         }
 
 
@@ -211,11 +193,8 @@ public class Hashtable{
     }
 
     private int getHash(String key){
-        return Math.abs(key.hashCode() % buckets.length); // or something
+        return Math.abs(key.hashCode() % buckets.length); // or something - COULD THIS FUNCTION CHANGE TO BE MORE RANDOM??
     }
-
-
-    // need to think about the collision policy - what to do in the case of multiple key value pairs with the same input
 
 
 }
