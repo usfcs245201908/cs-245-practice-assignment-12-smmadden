@@ -1,12 +1,7 @@
 public class Hashtable{
-
-    // does this implementation need k and v, or is it just string?
-    // if this implementation is just string for both key and value then replace all k and vs with string
-
     private HashNode[] buckets;
-    public final double LOAD_THRESHOLD = 0.3; // 0.5, whatever
+    public final double LOAD_THRESHOLD = 0.3; // could also be 0.5
     private int entries = 0;
-
 
     // constructor
     public Hashtable(){
@@ -48,65 +43,44 @@ public class Hashtable{
             value = newValue;
         }
 
-        public void setKey(HashNode newNext){
+        public void setNext(HashNode newNext){
             next = newNext;
         }
     }
 
     public void put(String key, String value){
-        // Adds the key/value pair into the Hashtable instance. If there is an existing key/value pair, the Hashtable instance replaces the stored value with the argument value
+        // adds the key/value pair into the Hashtable instance.
 
-
-        // essentially have to find the thing to make sure there's no duplicates
-        // if we find the key, just change the value
-        // if the key is not there then just add in the key value pair
         HashNode head = buckets[getHash(key)];
-        // head of the linked list - what are the two possible values for the head of the linked list
-        // null and not null
-        // if head is null
         if(head == null){
-            // can do set
+            // if the head is null, can just set the head to a new node
             buckets[getHash(key)] = new HashNode(key, value);
-            //buckets.set(getHash(key), new HashNode(key, value));
         } else {
-            // find if there is a key equal to the key we have
-            // recycle from find function
+            // need to find if there is a key equal to the key we have
             while(head != null){
                 if(head.key.equals(key)){
                     head.value = value; // just changing its value
-                    return; // we're done here - makes it more efficient - REASON we can return = not changing the number of entries so don't need to mess with threshold
+                    return; // we're done (more efficient to return here)
                 }
                 head = head.next;
-                // this is going to be slightly inefficient but
-                // make more efficient!!! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< EFFICIENCY PROBLEM HERE - HOW TO FIX?
-
             }
-            // key is not found - we need to add it
-            // want to add to the head of the linked list
-            // create a new node
-
+            // end of loop, so key is not found - we need to add it
+            // add to the head of the linked list
             HashNode node = new HashNode(key, value);
             node.next = buckets[getHash(key)];
-            //node.next = buckets.get(getHash(key)); // cant do head because head is guaranteed to be null at this point
-            // one last thing to do - if this is now the head, need to do a bucket set
-            buckets[getHash(key)] = node; //.set(0, node);
+            buckets[getHash(key)] = node;
         }
         ++entries;
 
         // calculate lambda
         if(((entries * 1.0) / buckets.length) >= LOAD_THRESHOLD){
-            int originalSize = buckets.length;
             HashNode[] old_buckets = buckets;
-            buckets = new HashNode[originalSize*2]; // don't need to copy everything over because we are rehashing everything
+            buckets = new HashNode[old_buckets.length*2]; // don't need to copy everything over because we are rehashing everything
 
-
-
-            // remove node then add again, cycle through entire original size
-            for(int i=0; i<originalSize; i++){
-                HashNode node = old_buckets[i];
-                //HashNode node = buckets.get(i); // this gets the head of the bucket at index i
-
-                while(node != null){ // node is always null because we're writing over buckets
+            // remove node then add again, cycle through entire original array and rehash into new array
+            for(int i=0; i<old_buckets.length; i++){
+                HashNode node = old_buckets[i]; // node is from the old buckets array, need to place into the updated buckets array
+                while(node != null){
                     put(node.key, node.value);
                     node = node.next;
                 }
@@ -117,58 +91,43 @@ public class Hashtable{
     }
 
     public String get(String key){
-        // Returns the value associated with the key which is passed as an argument; returns ​null​ if no key/value pair is contained by the Hashtable instance
-
+        // returns the value associated with the key
         HashNode head = buckets[getHash(key)];
-        //HashNode head = buckets.get(getHash(key)); // will give us the head of the linked list
-        // does the node at that head have the key we want? keep looking until run out of nodes to look into
-        // if head == null, return null (don't need to check that, put it in the loop), if not, check if its the key,
+        // loop through linked list to find the key
         while(head != null){
             if(head.key.equals(key)){
                 return head.value;
             }
             head = head.next;
         }
-        // gotten to end of the list without finding a hashnode with the key so just return null
+        // gotten to end of the list without finding a hash node with the key, so returns null
         return null;
     }
 
     public boolean containsKey(String key){
-        // Returns “true” if a key/value object pair (with the key matching the argument and any value)
-
-        // sounds like it is essentially find except it returns boolean
-
+        // returns “true” if there is a key/value object pair
         HashNode head = buckets[getHash(key)];
-        //HashNode head = buckets.get(getHash(key)); // will give us the head of the linked list
-        // does the node at that head have the key we want? keep looking until run out of nodes to look into
-        // if head == null, return null (don't need to check that, put it in the loop), if not, check if its the key,
+        // loops through linked list to find the key
         while(head != null){
             if(head.key.equals(key)){
                 return true;
             }
             head = head.next;
         }
-        // gotten to end of the list without finding a hashnode with the key so return false
+        // gotten to end of the list without finding a hash node with the key, so returns false
         return false;
     }
 
     public String remove(String key) throws Exception{
-        // Removes the key/value pair from the Hashtable instance and returns the value associated with the key to the caller. Throws an Exception instance if the key is not present in the Hashtable instance.
-
+        // removes the key/value pair from the Hashtable
         HashNode head = buckets[getHash(key)];
-        //HashNode head = buckets.get(getHash(key)); // getHash is the index of head of the linked list of key value pairs
-
-        // if key not found then throw exception <<<<<<
-
-        // if the head is null then we're done
         if(head != null){
-            if(head.key == key){
-                buckets[getHash(key)] = head.next; // was 0 before, doesn't make sense because the index is the hash
-                //buckets.set(0, head.next); // what am I trying to do here? << trying to set the head
+            if(head.key.equals(key)){ // special case if we are removing the head
+                buckets[getHash(key)] = head.next;
                 --entries;
                 return head.value;
             } else {
-                // need to find the one previous to the one with the key and link the prev to the next of the key
+                // removing from a linked list - need to find the previous node
                 HashNode prev = head;
                 HashNode curr = null;
                 while(prev.next != null){
@@ -179,21 +138,18 @@ public class Hashtable{
                         --entries;
                         return curr.value;
                     }
-                    // this is where we stopped - keeps going
                     prev = prev.next;
                 }
 
             }
-            // if we have the head and the head is not null and the key is what we want then we can just set the head to the next node
 
         }
         // if we have made it this far then the key does not exist (head is null or have cycled through entire list) - throw exception
         throw new Exception();
-
     }
 
     private int getHash(String key){
-        return Math.abs(key.hashCode() % buckets.length); // or something - COULD THIS FUNCTION CHANGE TO BE MORE RANDOM??
+        return Math.abs(key.hashCode() % buckets.length);
     }
 
 
